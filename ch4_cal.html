@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<head>
+  <meta charset="utf-8">
+  <title>계산기</title>
+  <style>
+    * { box-sizing: border-box }
+    #result { width: 180px; height: 50px; margin: 5px; text-align: right }
+    #operator { width: 50px; height: 50px; margin: 5px; text-align: center }
+    button { width: 50px; height: 50px; margin: 5px }
+  </style>
+</head>
+
+<!-- 계산기 버튼 구현 -->
+<body>
+    <!-- input에 readonly 옵션이 있으면,이 input 창에는 키보드로 직접 입력을 못 함. 자바스크립트로만 쓰기 가능 -->
+  <input readonly id="operator">
+  <input readonly type="number" id="result">
+  <div class="row">
+    <button id="num-7">7</button>
+    <button id="num-8">8</button>
+    <button id="num-9">9</button>
+    <button id="plus">+</button>
+  </div>
+  <div class="row">
+    <button id="num-4">4</button>
+    <button id="num-5">5</button>
+    <button id="num-6">6</button>
+    <button id="minus">-</button>
+  </div>
+  <div class="row">
+    <button id="num-1">1</button>
+    <button id="num-2">2</button>
+    <button id="num-3">3</button>
+    <button id="divide">/</button>
+  </div>
+  <div class="row">
+    <button id="clear">C</button> <!-- 계산 초기화 -->
+    <button id="num-0">0</button>
+    <button id="calculate">=</button>
+    <button id="multiply">x</button>
+  </div>
+<script>
+//!! 문자열로 일단 숫자들을 입력 받음! 123 에 4 더하면 문자열 표현으로 1234 가 되는 거임
+  let numOne = ''; // operator중심으로 왼쪽 숫자
+  let operator = '';
+  let numTwo = ''; //oprator 중심으로 오른쪽 숫자
+  //내가 사용할 부분의 태그를 선택하고 변수에 담음
+  //현재 내가 선택한 오퍼레이터를 나타낼 부분
+  const $operator = document.querySelector('#operator');
+  //글자 써줄 부분
+  //result는 input 타입임. 따라서 .value로 다뤄야 함
+  const $result = document.querySelector('#result');
+  
+  //콜백함수를 직접 써주는 경우
+  /*document.querySelector('#num-0').addEventListener('click', ()=>{
+      if(operator){
+          numTwo+=0;
+      }else{
+          numOne+=0;
+      }
+      //$result는 input타입이므로 .value로 다뤄야 함(textContent가 아니라)
+      //자바스크립트는 변화가 있으면 화면도 반드시! 꼭 체크해줘야 함!(어쨌든 화면에 반영이 되어야 하므로)
+      $result.value+=0;
+  });*/
+
+/* !!!!!!!!!!!고차함수!!! -함수가 함수를 리턴하는 함수
+//밑에 onClickOperator 함수가 대표적인 예시가 됨
+(high order function)
+  //콜백함수가 고차함수가 되는 경우(함수가 함수를 리턴하는 경우)
+  document.querySelector('#num-0').addEventListener('click', onClickNumber(0));  //만약에 이런 식으로 파라미터까지 해서 리턴 값을 받아 오고 싶다면
+  //onClickNumber의 리턴값 자체가 함수이면 됨
+  const onClickNumber=(number)=>{
+      return(()=>{
+          if(operator){
+              numTwo+=number;
+          }else{
+              numOne+=number;
+          }
+          //자바스크립트는 변화가 있으면 화면도 반드시! 꼭 체크해줘야 함!(어쨌든 화면에 반영이 되어야 하므로)
+          $result.value+=number;
+          })
+  };
+  //그리고 리턴값이 함수인 함수, 즉 고차함수의 다른 표현: ()=>()=>{ } 이렇게 화살표가 연속해서 되어있음
+  //이렇게 화살표가 연속해서 되어있으면 고차함수(함수를 리턴하는 함수)라고 이해하면 됨
+  const onClickNumber=(number)=>()=>{
+          if(operator){
+              numTwo+=number;
+          }else{
+              numOne+=number;
+          }
+          //자바스크립트는 변화가 있으면 화면도 반드시! 꼭 체크해줘야 함!(어쨌든 화면에 반영이 되어야 하므로)
+          $result.value+=number;
+  };
+
+*/
+  
+
+//event: 이벤트가 발생했을 때, 브라우저 자체에서 생성하는 객체
+//예를 들어 클릭 이벤트가 발생하면, event.target은 그 버튼이 되는 거고, 따라서 event.target.textContent는 그 버튼에 적힌? 글자가 되는 거임
+/*
+const onClickNumber=(event)=>{
+      if(operator){
+          if(!numTwo){ //아직 numTwo 입력받기 전이면
+              $result.value=''; //result를 보여주는 화면(의 부분)을 지워라
+          }
+          numTwo+=event.target.textContent; //그리고 입력한 numTwo가 보여짐
+      }else{
+          numOne+=event.target.textContent;
+      }
+      //화면에 반영하기
+      //$result는 input타입이므로 .value로 다뤄야 함(textContent가 아니라)
+      //자바스크립트는 변화가 있으면 화면도 반드시! 꼭 체크해줘야 함!(어쨌든 화면에 반영이 되어야 하므로)
+      $result.value+=event.target.textContent;
+}*/
+
+//위의 onClickNumber if문이 중첩되어 있어서 중첩을 없앤 결과 - 함수 설명은 위가 더 잘 되어 있음
+/* if문 중첩 없애는 방법
+1. 각 if/else 문 밑에!(나중에, 다음에) 나오는 공통된 절차를 각 분기점 내부로 다시 넣어준다.
+2. 각 분기점 별로 더 짧은 내용(절차)부터 먼저 실행(체크) 되도록 if문을 작성한다. ex) 기존의 큰 조건을 반대로 한다던가
+3. 짧은 절차가 끝나면 바로 return 되도록 한다. 그러면 return되면 어차피 더이상 아래로 가지 않으므로 else 문으로 해줄 필요도 없어진다.
+4. 따라서 아래에 있는 else문을 제거한다.
+*/
+const onClickNumber=(event)=>{
+      if(!operator){
+          numOne+=event.target.textContent;
+          $result.value+=event.target.textContent;
+          return; //return이 나오고 나면 else가 필요 없어짐
+      }
+      if(!numTwo){ 
+          $result.value='';
+        }
+        numTwo+=event.target.textContent;
+        $result.value+=event.target.textContent;
+}
+
+//event는 브라우저가 함수를 실행하면서 자기가 알아서 디폴트로 파라미터로 넘겨줌! 
+//따라서 파라미터가 event이면 굳이 파라미터에 명시하지 않아도 됨!그래서 밑의 콜백함수에서 파라미터를 안 써준 거임
+  document.querySelector('#num-0').addEventListener('click', onClickNumber); 
+  //!!!!!콜백함수는 파라미터 빼고!!!!!!!!(왜냐면 리턴 값을 받아오는 게 아니라 단순 함수 실행/호출만 하면 되니까!) 그냥 함수 이름만! 적어줘야 함
+  //하지만 실행에서 파라미터가 꼭 필요한 경우가 있음 . 그럴 땐 리턴 자체가 함수 자체가 되는 고차함수로 만듦. 아래의 예시(onClickOperator) 보기
+  document.querySelector('#num-1').addEventListener('click', onClickNumber);
+  document.querySelector('#num-2').addEventListener('click', onClickNumber);
+  document.querySelector('#num-3').addEventListener('click', onClickNumber);
+  document.querySelector('#num-4').addEventListener('click', onClickNumber);
+  document.querySelector('#num-5').addEventListener('click', onClickNumber);
+  document.querySelector('#num-6').addEventListener('click', onClickNumber);
+  document.querySelector('#num-7').addEventListener('click', onClickNumber);
+  document.querySelector('#num-8').addEventListener('click', onClickNumber);
+  document.querySelector('#num-9').addEventListener('click', onClickNumber);
+
+//고차함수
+const onClickOperator=(op)=>()=>{
+    if(numOne){
+        operator=op;
+        //화면에 반영하기
+        $operator.value=op;  //내가 선택할 오퍼레이터를 나타낼 화면 부분
+    }else{
+        alert("숫자를 입력하세요")
+    }
+
+}
+/* 화살표 2개로 표현하기 전(디폴트 표현법)
+const onClickOperator=(op)=>{
+    //리턴 자체가 또다른 함수
+    return( ()=>{
+    if(numOne){
+        operator=op;
+        $operator.value=op;
+    }else{
+        alert("숫자를 입력하세요")
+    }
+    })
+
+}*/
+
+//여기서는 파라미터로 정보(기호)들을 직접 넘겨주기 때문에 고차 함수를 써줘야 한다!
+ document.querySelector('#plus').addEventListener('click', onClickOperator('+'));
+ document.querySelector('#minus').addEventListener('click', onClickOperator('-'));
+ document.querySelector('#divide').addEventListener('click', onClickOperator('/'));
+ document.querySelector('#multiply').addEventListener('click', onClickOperator('*'));
+ document.querySelector('#calculate').addEventListener('click', () => {
+    if (numTwo) {
+      switch (operator) { //onClickOpeartor에서 operator를 저장해놓음
+        case '+':
+        //numOne과 numTwo, 즉 입력을 문자열로 받았음!!!
+          $result.value = parseInt(numOne) + parseInt(numTwo);
+          break;
+    //////// -,/,* 등 나머지 연산자는 문자열을 알아서 숫자로 바꾸기 때문에 그냥 연산해주면 됨!!!
+        case '-':
+          $result.value = numOne - numTwo;
+          break;
+        case '*':
+          $result.value = numOne * numTwo;
+          break;
+        case '/':
+          $result.value = numOne / numTwo;
+          break;
+        default:
+          break;
+      }
+    } else {
+      alert('숫자를 먼저 입력하세요.');
+    }
+  });
+
+  document.querySelector('#clear').addEventListener('click', () => {
+    numOne = '';
+    operator = '';
+    numTwo = '';
+    $operator.value = '';
+    $result.value = '';
+  });
+
+</script>
+</body>
