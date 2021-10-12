@@ -1,0 +1,165 @@
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>끝말잇기</title>
+</head>
+<body>
+    <div><span id="order">1</span>번째 참가자</div>
+    <!--현재 div의 자손이 span인 거임. docment.querySelector('div span') 이렇게 띄어쓰기로 자손!(꼭 자식관계가 아니어도 됨) 관계를 나타낼 수 있음
+    자식 관계는 >로 표현 ex. document.querySelector('div>span')-->
+    <div>제시어: <span id="word"></span></div> <!--span은 인라인 컨테이너를 나타냄 -->
+    <input type="text"> <!-- 입력창-->
+    <button class="target">입력</button>
+    <button class="btn">입력</button>
+    <button class="btn target">입력</button> <!--클래스는 여러개 가능-->
+    <script>
+        //prompt는 사용자로부터 입력을 받는 것
+        const number=parseInt(prompt("총 몇 명이 참여하나요?"));// 사용자로부터 입력받음, 디폴트는 뭐든지 문자열로 받음, 
+        //그래서 여기서는 형변환을 위해 ParseInt를 해줌
+        //alert는 알림창
+        console.log(number)
+        alert(number);
+        //사용자로부터 예/아니오를 입력받음,boolean임
+        const yesorno= confirm("맞나여?");
+
+        const $button=document.querySelector('button');
+        const $input=document.querySelector('input');
+        const $word=document.querySelector('#word');
+        const $order=document.querySelector("#order")
+        let word; //제시어
+        let newWord; //입력어
+
+        //onClickButton이라는 함수
+        const onClickButton=()=>{
+            if(!word || word[word.length-1]===newWord[0]){ //제시어 비어있음 == 제일 첫번째 사람
+                word=newWord; //입력한 단어 자체가 제시어가 된다
+                //console.log("word: ",word)
+                $word.textContent=word;
+                //.textContent: 1. text 성질 추가, 2. 해당 객체의 텍스트 값을 반환
+                //즉 이렇게 되면 $word에 해당되는 제시어의 span에 word 텍스트 속성이 추가되어 보여지게 됨
+                $input.value=""; // 입력창은 다시 깨끗하게 비워줌
+                $input.focus(); //입력창에 자동으로 커서가 있도록
+                //input은 특이하게 아예 입력자체가 기능이니까 .textContent로 해주지 않고 그냥 value라고만 해줘도 됨
+                //몇 번째 참가자인지 업뎃
+                const order=parseInt($order.textContent); //현재! 순서, 아이디가 order이므로 이걸 이용해서 값을 가져옴
+                /*if(order+1>number){
+                    $order.textContent=1;
+                }else{
+                    $order.textContent=order+1;
+                }*/
+            }/*else{//비어있지 않음
+                //끝말잇기를 바르게 했는지 판단
+                //c++처럼 문자열을 배열로 취급할 수 있음
+              !!!!  //위의 !word인 경우와 코드내용이 완전 겹치므로 위에서 ||(or)으로 경우를 묶어버림!
+
+                if(word[word.length-1]===newWord[0]){//옳은 경우 :제시어의 마지막 글자 === 새 단어의 첫 글자
+                   // console.log("끝글자: ",word[word.length-1]);
+                    //console.log("첫 글자: ",newWord[0])
+                    //입력한 단어가 제시어가 됨
+                    word=newWord;
+                    $word.textContent=word;
+                    $input.value="";//비우기
+                    $input.focus();//커서 두기
+                    order=parseInt($order.textContent); // 바뀔 때마다 새로 가져와야 하므로 또 가져온다.
+                    if(order+1>number){
+                        $order.textContent=1;
+                    }else{
+                        $order.textContent=order+1;
+                    }
+                    */
+            else{//아닌 경우
+                   alert("잘못된 단어입니다");
+                   /* 위에서도 마지막에 반복되었음
+                   if(order+1>number){
+                    $order.textContent=1;
+                    }else{
+                     $order.textContent=order+1;}
+                     */
+            }
+            // 각 if,else문 등의 끝에 겹치는 게 있는 경우에는 그냥 완전 밖으로 빼버림
+            if(order+1>number){
+                $order.textContent=1;
+            }else{
+                $order.textContent=order+1;
+            }
+        }
+
+        const onInput=(event)=>{
+            //글자를 입력하면 newWord에 입력한 글자들이 저장됨
+            newWord=event.target.value;
+            console.log(newWord);
+        }
+
+        document.querySelector('input').addEventListener('input',onInput);
+        document.querySelector('button').addEventListener('click',onClickButton);
+
+        //input태그에 관련된 이벤트처리(여기서는 입력)
+        //리스너의 이름은 마음대로 해주면됨(걍 함수처럼)
+        //document.querySelector('이벤트가 발생하는 태그').addEventListener('발생 이벤트 종류',익명함수)
+        //이벤트 종류는 반드시 문자열
+        //addEventListener() 메소드는 거의 모든 브라우저에서 지원하는 이벤트 리스너 등록을 위한 메소드입니다
+        //여기서의 익명함수는 콜백함수임.(리스너 함수)
+        //콜백함수: 어떤 동작 후에 "연이어서" 바로 실행되는 함수
+
+        //이벤트가 발생하면, 익명 함수 부분이 실행되는 거임
+        //()=>{} 부분을 function(){} 이렇게 해줘도 상관없는 거임
+        /* 1번
+        document.querySelector('input').addEventListener('input',()=>{
+            console.log("글자입력");
+        });*/
+        //1-1함수
+        //바로 위에 것에 덧붙여서,  내가 쓴?발생시킨? 이벤트에 대한 정보 보기
+        //event.target을 이용하면 현재 이벤트가 발생한 요소의 속성들을 얻을 수 있다.
+        //event.target:event가 전달한 객체에 대한 참조
+        /*
+        document.querySelector('input').addEventListener('input',(event)=>{
+            console.log("글자입력",event.target.value); //console창에 내가 쓴 값도 보여지게 됨
+        });
+        */
+        /* 2번 함수
+        document.querySelector('button').addEventListener('click',()=>{
+            console.log("버튼 클릭");
+        });
+        */
+        /*
+        //2-1함수
+        //콜백 함수 다르게 표현하기. 구현부와 선언을 따로
+        //이때는 익명함수 아님. 함수명을 달아줘야 함
+        //만약 재사용이 많은 거 같으면 이 방식이 유리함
+        const onClickButton=()=>{
+            console.log("버튼 클릭함수")
+        }
+        const $button=document.querySelector('button');
+        $button.addEventListener('click',onClickButton); //단 ! 이때 반드시 함수 이름만 써줘야 함. onClick()이렇게 괄호?까지 해버리면 안 됨
+        //괄호까지 해버리면 return 값을 받아온다는 건데
+        //왜냐면 retuurn 값이 없으면 undefined로 되어버리므로  에러가 남. 그냥 이름으로만 써야함
+        //말 그대로 어떤 '값'이 오는 자리가 아니라! "함수"의 자리이므로 그냥 함수의 이름만 써줌
+        */
+    </script>
+</body>
+</html>
+
+<!--//html "태그" 선택하기
+//document: 브라우저 자체에서 제공하는 객체
+//해당되는 게 여러개이면 그 중 첫 번째 것만 가져온다.
+document.querySelector('선택자');
+
+//예시: input태그 가져오기 
+//변수 앞에 $넣는 건 걍 나만의 규칙. 선택자를 담고 있는 변수라는 의미
+const $input=document.querySelector('input');
+console.log($input)
+//태그 여러개 선택
+const $$buttons=document.querySelectorAll('button');//버튼 여러개
+
+//id 선택하기- id는 고유한 값
+// #사용
+document.querySelector('#order'); //태그의 id가 order인 것 가져오기
+
+//class 선택하기
+//. 사용
+document.querySelectorAll('.btn'); //클래스 포함?해당?되는 게 여러개니까 querySelectorAll을 해줌
+document.querySelectorAll('button.btn'); //이렇게도 가능. button 태그이면서 btn 클래스인 것
+document.querySelector('선택자 하위(내부)선택자 하위(내부)선택자') ; 이런 식으로 표현
+-->
