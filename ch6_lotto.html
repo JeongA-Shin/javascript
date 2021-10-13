@@ -1,0 +1,76 @@
+<!--
+    타이머를 집중적으로 사용
+    비동기: 동기의 반댓말, 코딩한 "순서"와 다르게 동작하는 코드
+    이벤트 리스너가 대표적인 비동기 코드임
+    (콜백 함수를 통해 비동기 처리 방식에 의해 일어날 수 있는 문제들을 막은 거임)
+!!즉
+자바스크립트는 동기 처리를 기다려 주지 않음. 즉 비동기 방식인데,
+이런 문제를 해결하기 위한 것이 콜백함수를 사용하는 것임. 
+순서를 보장하기 위해(동기 처리하기 위해) 함수의 인자로 콜백을 넣고, 비동기가 끝나는 시점에 콜백 함수를 실행시켜 주는 것
+즉 콜백함수는 다른 함수의 실행이 끝날 때까지 특정 코드가 실행 되지 않게 기다려 주는 것
+
+-->
+<!DOCTYPE html>
+<head>
+  <meta charset="utf-8">
+  <title>로또추첨기</title>
+  <style>
+    .ball {
+      display: inline-block;
+      border: 1px solid black;
+      border-radius: 20px;
+      width: 40px;
+      height: 40px;
+      line-height: 40px;
+      font-size: 20px;
+      text-align: center;
+      margin-right: 20px;
+    }
+  </style>
+</head>
+<body>
+<div id="result">추첨 결과는? </div>
+<div id="bonus">보너스: </div>
+<script>
+    //ch5에서 아래에 forEach, fill, map 설명해놓은 것 참고
+    const candidate=Array(45).fill().map((v,i)=>i+1); //candidate에는 1부터 45까지의 수들이 배열로 있는 것임
+
+    //공 7개 뽑기- 피셔 예이츠 셔플
+    //후보군 "전부"를 랜덤으로 섞은 후 뽑는 것
+    //그리고 후보군에서 뽑은 값들을 하나씩 제거하고, 후보군이 하나도 남지 않을 때까지 반복한다.
+    //무작위로 뽑아서 그것들로 새로 배열을 만듦
+
+    // 45개(1~45) 중에  랜덤으로 7개를 뽑는 것이 아니라! 랜덤으로 섞인 45개(ex 2 1 5 32 4 18...) 중에 7개 뽑기
+    const shuffle=[];//뽑힌 공 저장
+    while(candidate.length>0){//후보군이 하나도 남지 않을 때까지 반복한다.
+        const random=Math.floor(Math.random()*candidate.length); //무작위로 인덱스 뽑기
+        //splice를 하면 배열로 리턴된다! 즉 ~.splice(random,1)에서 빠지는 값이 3이라는 값이라면 리턴 값은 [3]으로 리턴된다.
+        const spliceArray=candidate.splice(random,1); //candidate에서 한 개 없애고, 없앤 값을 받는다. (splice의 리턴값은 배열)
+        const value=spliceArray[0];  // splice의 리턴값은 배열이므로 [0]을 통해 value를 획득
+        shuffle.push(value); // 빼온 것을 shuffle에 넣기
+    }
+    console.log(shuffle); //따라서 shuffle에는 1부터 45까지의 수가 랜덤하게 들어가 있다. ex) 1 4 9 10 28 23 29 6 ....
+
+
+    //그리고 공 6개를 뽑고 작은 수부터 보여주기 위해 뽑은 후 정렬해준다....
+    //shuffle.slice(0,6): shuffle에서 인덱스 0 포함해서 인덱스 6 전까지(인덱스 0~인덱스 5)를 가져옴.(잘라옴)
+    //splice랑은 인덱스 표시가 완전 다름!splice는 첫번째 파라미터 포함해서 몇 개인지, slice는 말그대로 범위임
+    //!!slice로 잘라도 원본엔 변경 없음!
+    //.sort((a,b)=>{a-b} ): 정렬하는 코드
+    //!!sort는 원본까지 다 바꿔버림!
+    //근데 원본은 그대로 남겨져 있는게 편함
+    //따라서 전체를 sort하고 싶다면 arr.slice().sort();이런 식으로 copy본을 하나 만들고 그에 대해 sort해주기
+    /*이 함수가 리턴하는 값이 0보다 작을 경우,  a가 b보다 앞에 오도록 정렬하고,
+      이 함수가 리턴하는 값이 0보다 클 경우, b가 a보다 앞에 오도록 정렬합니다. // 즉 오름차순 정렬
+      만약 0을 리턴하면, a와 b의 순서를 변경하지 않습니다*/
+    const winBalls=shuffle.slice(0,6).sort((a,b)=> {return a-b} );
+    //!!slice로 잘라도 원본엔 변경 없음!
+    const bonus=shuffle[6]; //보너스 공
+    console.log(winBalls,bonus);
+
+    //setTimeout : 브라우저 자체에서 제공하는 함수
+    /*setTimeout(()=>{
+        //내용: 특정 동작(지정한 시간까지 기다리기) 이후에 추가로 실행되는 함수이므로 콜백함수
+    },밀리초);*/ //3000이면 3초
+</script>
+</body>
