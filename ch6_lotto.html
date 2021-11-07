@@ -7,7 +7,7 @@
 자바스크립트는 동기 처리를 기다려 주지 않음. 즉 비동기 방식인데,
 이런 문제를 해결하기 위한 것이 콜백함수를 사용하는 것임. 
 순서를 보장하기 위해(동기 처리하기 위해) 함수의 인자로 콜백을 넣고, 비동기가 끝나는 시점에 콜백 함수를 실행시켜 주는 것
-즉 콜백함수는 다른 함수의 실행이 끝날 때까지 특정 코드가 실행 되지 않게 기다려 주는 것
+!즉 콜백함수는 다른 함수의 실행이 끝날 때까지 특정 코드가 실행 되지 않게 기다려 주는 것
 
 -->
 <!DOCTYPE html>
@@ -71,6 +71,53 @@
     //setTimeout : 브라우저 자체에서 제공하는 함수
     /*setTimeout(()=>{
         //내용: 특정 동작(지정한 시간까지 기다리기) 이후에 추가로 실행되는 함수이므로 콜백함수
+        //리턴값이 아니라! 함수의 자리임!!
     },밀리초);*/ //3000이면 3초
+    const $result = document.querySelector('#result');
+    const $bonus=document.querySelector('#bonus');
+
+    // !!!!중복되는 부분은 함수로 만들어서 따로 빼내기!
+    const drawBall=(number,target)=>{
+      const $ball = document.createElement('div');
+      $ball.className='ball';
+      $ball.textContent=number;
+      $target.appendChild($ball);
+    };
+
+    for(let i=0;i<winBalls.length;i++){
+       setTimeout(()=>{
+         drawBall(winBalls[i],$result);
+         },(i+1)*1000);
+    }
+
+    setTimeout(()=>{
+         drawBall(bonus,$bonus);
+         },7000);
+
+  /*var 과 let의 차이!
+    일반적으로 let을 쓰는 게 좋음
+    var은 그 특성을 잘 이해 해야 함
+
+    --->scope의 차이!
+    var은 함수 스코프를 가지고(함수 안에서 선언하면 그 함수 밖에서는 사용 못 함, 블록 중에서도 함수!), 
+    -->if문의 {}을 벗어나서는 접근이 가능함(if문 안의 var 변수를) . 즉 함수 내의 변수만 아니면 전역?처럼 사용할 수 있는 듯
+
+###########variable과 비동기가 만나면 클로저 문제가 발생한다 ############ -> 그래서 웬만하면 let을 쓰는 게 좋다
+    let은 블록 ({ ], 중괄호 단위)스코프를 가짐(그냥 내가 일반적으로 아는 지역변수의 범위)
+    //클로저(함수와 함수 밖 변수와의 관계)
+    를 활용해서 var로도 해당 코드를 만들 수 있음!
+    //var는 함수 블록만 있으면 되니까 그걸 활용
+
+    for(var i=0;i<winBalls.length;i++){
+      (function(j){
+        setTimeout(()=>{
+         drawBall(winBalls[j],$result);
+         },(i+1)*1000);
+      })(i); //이렇게 function바로 호출
+    }
+    
+  */
+
+   
 </script>
 </body>
