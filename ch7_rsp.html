@@ -1,0 +1,182 @@
+
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>가위바위보</title>
+    <style>
+        #computer{
+            width:142px;
+            height:200px
+        }
+    </style>
+</head>
+<body>
+<div id="computer"></div>
+<div>
+    <button id="scissors" class="btn">가위</button>
+    <button id="rock" class="btn">바위</button>
+    <button id="paper" class="btn">보</button>
+</div>    
+<div id="score">0</div>
+<script>
+    //document는 브라우저 자체에서 생성하는 객체
+    const $computer = document.querySelector('#computer');
+    const $score = document.querySelector('#score');
+    const $rock = document.querySelector('#rock');
+    const $scissors = document.querySelector('#scissors');
+    const $paper = document.querySelector('#paper');
+    const IMG_URL = './rsp.png'; //내가 쓸 이미지 경로 (./ : 현재 위치한 폴더, ../: 부모 폴더, /: 루트 폴더(윈도우면 C드라이브))
+    $computer.style.background=`url(${IMG_URL}) 0 0`; //전체 이미지에서의 가로 위치 세로 위치
+    $computer.style.backgroundSize='auto 200px' //백그라운드 이미지 사이즈 조절, 가로너비(auto), 세로 너미(200px)
+    // .style.background : 가로 세로의 비율을 유지하면서 세로 길이가 200px가 될 때까지 이미지를 줄임
+
+    //그룹화해서 하나의 객체로 만들기
+    //그룹화할 수 있는 것은 최대한 그룹화하기
+    const rspX={
+        scissors:'0',
+        rock:'-220px',
+        paper:'-440px'
+    };
+
+
+    let computerChoice='scissors'; //변수가 의미하는 것 최대한 나타나게 네이밍하기!!
+
+    const changeComputerHand=()=>{
+        if(computerChoice==='scissors'){ //가위면
+            computerChoice='rock' //데이터 바꿔주기
+        }else if(computerChoice==='rock'){ //바위
+            computerChoice='paper'//데이터 바꿔주기
+        }else{ //보
+            computerChoice='scissors' //데이터 바꿔주기
+        }
+        //화면 바꿔주기
+        //우리가 실질적으로 바꾸는 것은 .style.background 속성이지만! 이 속성을 한 번 건들 때마다
+        //style.backgroundSize도 다시 한 번 해주어야 에러가 나지 않음!!!->안 해주면 backgroundSize가 리셋되어버림
+        $computer.style.background=`url(${IMG_URL}) ${rspX[computerChoice]} 0`; //전체 이미지에서의 가로 위치 세로 위치
+        // rspX.computerChoice를 해버리면 오류남. 이번 경우처럼 rspX.[computerChoice] 이렇게 해줘야함
+        //!!!!!!중요!!!!!!! js에서는 객체도 그냥 배열처럼[]로 찾을 수 있음! 그냥 딕셔너리처럼 person["name"] 이렇게 찾기 가능!
+        // person.name도 가능하지만
+        $computer.style.backgroundSize='auto 200px' // 이미지 사이즈 조절, 가로너비(auto), 세로 너미(200px)
+    }
+    
+    /* 기본형태
+    setInterval(()=>{
+        ....
+    },1000) //1초 간격으로 설정*/
+
+    //!!중요!! 콜백함수 자리에 말 그대로 함수 호출만 (함수명만) 들어가야 함. ()이런 거 쓰면 리턴값이 들어오게 되는 것임!
+    //함수자리엔(이 경우엔 콜백함수 자리) 함수만 들어가야함
+    let intervalID=setInterval(changeComputerHand,50)
+    //멈추기 위한 취소 함수를 위해 변수에 담음
+
+    //이제 interval을 잠깐 멈춰야 함 
+    //js는 setInterval을 취소할 수 있는 방법으로 clearInterval 함수를 제공함
+    //버튼이 클릭되면
+
+    const scoreTable = {
+        rock: 0,
+        scissors: 1,
+        paper: -1,
+    };
+
+
+    //아래의 removeEventListener 말고 bool 변수를 통해서! 버튼 클릭시 동작을 할 지 안 할지 정할 수 있다!
+    //이 방식을 더 추천하긴 함. 더 깔끔하고, add와 remove를 계속 반복하면 실수 쉬움
+    
+    let clickable = true;
+    let score = 0;
+
+    const clickButton = () => {
+        if (clickable) {
+            clearInterval(intervalID);
+            clickable = false;
+            // 점수 계산 및 화면 표시
+            //내가 버튼 눌렀을 떄 어떤 버튼을 눌렀는지는 myChoice안에 담겨져 있음
+            //event는 document처럼 브라우저 자체에서 제공
+            //즉 여기서의ㅣ 이벤트는 클릭 이벤트. event.target은 버튼 따라서 event.target.textContent는 클릭한 버튼의 이름(쓰인 글)
+            const myChoice = event.target.textContent === '바위' 
+                ? 'rock' 
+                : event.target.textContent === '가위' 
+                    ? 'scissors' 
+                    : 'paper';
+            const myScore = scoreTable[myChoice];
+            const computerScore = scoreTable[computerChoice];
+            const diff = myScore - computerScore;
+
+            let message;
+            // 2, -1은 승리조건이고, -2, 1은 패배조건, 점수표 참고
+            if ([2, -1].includes(diff)) {
+                score += 1;
+                message = '승리';
+            } else if ([-2, 1].includes(diff)) {
+                score -= 1;
+                message = '패배';
+            } else {
+                message = '무승부';
+            }
+            $score.textContent = `${message} 총: ${score}점`;
+            setTimeout(() => {
+                clickable = true;
+                intervalID= setInterval(changeComputerHand, 50);
+            }, 1000);
+        }
+    }; 
+
+  /*
+    const clickButton=()=>{
+        //얘는 클릭하자마자 실행되고
+        clearInterval(intervalID); //setInterval이 담긴 변수를 clearInterval 안에 넣어주면 interval함수가 취소됨==잠깐 멈춤
+        //그리고 1초 후에는 다시 손이 50밀리센컨드 단위로 바뀌고 있어야 함
+        //멈춘 동안에는 버튼 클릭을 아예 못하도록 removeListener를 해준다!
+        $rock.removeEventListener('click', clickButton);
+        $scissors.removeEventListener('click', clickButton);
+        $paper.removeEventListener('click', clickButton);
+        
+        //내가 버튼 눌렀을 떄 어떤 버튼을 눌렀는지는 myChoice안에 담겨져 있음
+        //event는 document처럼 브라우저 자체에서 제공
+        //즉 여기서의ㅣ 이벤트는 클릭 이벤트. event.target은 버튼 따라서 event.target.textContent는 클릭한 버튼의 이름(쓰인 글)
+        const myChoice = event.target.textContent === '바위' 
+            ? 'rock' 
+            : event.target.textContent === '가위' 
+                ? 'scissors' 
+                : 'paper';
+        const myScore = scoreTable[myChoice];
+        const computerScore = scoreTable[computerChoice];
+        const diff = myScore - computerScore;
+
+        let message;
+        // 2, -1은 승리조건이고, -2, 1은 패배조건, 점수표 참고
+        if ([2, -1].includes(diff)) {
+            score += 1;
+            message = '승리';
+        } else if ([-2, 1].includes(diff)) {
+            score -= 1;
+            message = '패배';
+        } else {
+            message = '무승부';
+        }
+        $score.textContent = `${message} 총: ${score}점`;
+        
+        setTimeout(()=>{
+            //1초 후에는 다시 클릭할 수 있도록 다시 이벤트 리스너를 add한다.
+            $rock.addEventListener('click', clickButton);
+            $scissors.addEventListener('click', clickButton);
+            $paper.addEventListener('click', clickButton);
+        
+            //이 취소 함수는 클릭된 후 1초 있다가 실행됨
+            clearInterval(intervalID); //연속적으로 버튼을 여러번 눌렀을 경우 등에는 아직 interval 남아있을 수 있으므로 직전의 interval을 취소함
+            intervalID=setInterval(changeComputerHand,50);
+        },1000)
+    }
+    */
+
+    $rock.addEventListener('click', clickButton);
+    $scissors.addEventListener('click', clickButton);
+    $paper.addEventListener('click', clickButton);
+
+</script>
+</body>
+</html>
