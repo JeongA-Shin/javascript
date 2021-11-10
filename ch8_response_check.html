@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8" />
+<title>반응속도</title>
+<style>
+  #screen {
+    width: 300px;
+    height: 200px;
+    text-align: center;
+    user-select: none;
+  }
+  /* #screen 중에서 상태에 따라 또 클래스 나눔*/
+  #screen.waiting {  /*#screen 중에서 .을 통해 클래스 분류함!*/
+    background-color: aqua;
+  }
+  #screen.ready {
+    background-color: red;
+    color: white;
+  }
+  #screen.now {
+    background-color: greenyellow;
+  }
+</style>
+</head>
+<body>
+<div id="screen" class="waiting">클릭해서 시작하세요</div>
+<div id="result"></div>
+<script>
+    const $screen=document.querySelector('#screen');
+    const $result=document.querySelector('#result');
+    //태그에 해당 클래스가 들어있는지는 다음 방법으로 알 수 있다
+    //태그.classList.contains('클래스'); //true or false로 반환을 해줌
+    //하나의 아이디에 여러 클래스가 들어있을 수도 있음 ex)<div id="screen" class="waiting no hey">클릭해서 시작하세요</div>
+    //그러면 screen.classList.contains('no')면 true
+    //해당 태그에 대한 클릭 이벤트가 발생하면 이벤트 자체를 두고 하면 됨
+    //event.target.calssList.contains('you');
+
+    //클래스의 추가,수정,제거
+    //태그.classList.add('클래스'); //추가
+    //태그.classList.replace('기존 클래스','수정 클래스'); //수정
+    //태그.classList.remove('클래스'); //제거
+
+    let startTime;
+    let endTime;
+    const records=[];
+    let timeoutId;
+    //해당 태그부분에 대한 이벤트 리스너
+    $screen.addEventListener('click',(event)=>{
+        if(event.target.classList.contains('waiting')){
+            $screen.classList.remove('waiting');
+            $screen.classList.add('ready');
+            $screen.textContent='초록색이 되면 클릭하세요';
+            timeoutId=setTimeout(()=>{//빨간 화면이 되는 바로 그 순간부터! 일정 시간 후 (타이머 후) 초록 화면으로(즉 자동으로) 바뀌게 함
+                startTime=new Date(); //시작 시간 재기
+                $screen.classList.remove('ready');
+                $screen.classList.add('now');
+                $screen.textContent='클릭하세요';
+                //첫 시간 재기
+            },Math.floor(Math.random()*1000)+2000) //2~3초 사이의 수
+        }else if(event.target.classList.contains('ready')){  //이거는 빨간화면으로 바뀐 후 클릭이 되면!!! 그제서야 시작
+            //성급한 클릭 막기-> 너무 성급하게 클릭하면 다시 제일 처음 상태로 돌아감(다시 waiting상태로) 그리고 다시 타이머(언제 상태 바뀔지) 시작
+            $screen.classList.remove('ready');
+            $screen.classList.add('waiting');
+            $screen.textContent='너무 성급하시군요';
+            clearTimeout(timeoutId);//타이머 중지
+        }else{
+            //끌 시간 재기
+            //시간 차이 저장하기
+            endTime=new Date(); //시작 시간 재기
+            const current=endTime-startTime;
+            records.push(current)
+            const average=records.reduce((a,c)=>a+c)/records.length;
+            //reduce는 자바스크립트에서 배열을 활용할 때 필수적인 함수
+            //array.reduce((a,c)=>(a+c),0); a는 누적값, c는 현재값
+            //a+c는 계산하는 함수, 0은 초깃값(==처음 누적값)
+            //이 코드와 같이 초깃값을 따로 안 넣으면 첫 번째 값이 초깃값이 되는 거임
+            //이 이후로는 반복문 도는 것과 똑같음
+            $result.textContent=` 현재: ${current}ms,평균:${average}ms `;
+            //최근일 수록 더 큰 값
+            $screen.classList.remove('now');
+            $screen.classList.add('waiting');
+            $screen.textContent='클릭해서 시작하세요';
+        }
+    })
+</script> 
+</body>
+</html>
