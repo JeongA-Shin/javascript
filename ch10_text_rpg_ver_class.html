@@ -1,0 +1,360 @@
+<!-- ch10 내용을 클래스를 활용하여 더 좋게 재구성-->
+<!--데이터가 바뀌면 화면이 바뀌어야 하고,
+화면이 바뀌면 데이터가 바뀌어야 되는 것이 강조됨!!-->
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>텍스트 RPG</title>
+</head>
+<body>
+
+<form id="start-screen">
+  <input id="name-input" placeholder="주인공 이름을 입력하세요!" />
+  <button id="start">시작</button>
+</form>
+
+<div id="screen">
+  <div id="hero-stat">
+    <span id="hero-name"></span>
+    <span id="hero-level"></span>
+    <span id="hero-hp"></span>
+    <span id="hero-xp"></span>
+    <span id="hero-att"></span>
+  </div>
+  <form id="game-menu" style="display: none;">
+    <div id="menu-1">1.모험</div>
+    <div id="menu-2">2.휴식</div>
+    <div id="menu-3">3.종료</div>
+    <input id="menu-input" />
+    <button id="menu-button">입력</button>
+  </form>
+  <form id="battle-menu" style="display: none;">
+    <div id="battle-1">1.공격</div>
+    <div id="battle-2">2.회복</div>
+    <div id="battle-3">3.도망</div>
+    <input id="battle-input" />
+    <button id="battle-button">입력</button>
+  </form>
+  <div id="message"></div>
+  <div id="monster-stat">
+    <span id="monster-name"></span>
+    <span id="monster-hp"></span>
+    <span id="monster-att"></span>
+  </div>
+</div>
+<script>
+    const $startScreen = document.querySelector('#start-screen');
+    const $gameMenu = document.querySelector('#game-menu');
+    const $battleMenu = document.querySelector('#battle-menu');
+    const $heroName = document.querySelector('#hero-name');
+    const $heroLevel = document.querySelector('#hero-level');
+    const $heroHp = document.querySelector('#hero-hp');
+    const $heroXp = document.querySelector('#hero-xp');
+    const $heroAtt = document.querySelector('#hero-att');
+    const $monsterName = document.querySelector('#monster-name');
+    const $monsterHp = document.querySelector('#monster-hp');
+    const $monsterAtt = document.querySelector('#monster-att');
+    const $message = document.querySelector('#message');
+
+
+     class Game {
+      constructor(name) {
+      this.monster = null;
+      this.hero = null;
+      this.monsterList = [
+        { name: '슬라임', hp: 25, att: 10, xp: 10 },
+        { name: '스켈레톤', hp: 50, att: 15, xp: 20 },
+        { name: '마왕', hp: 150, att: 35, xp: 50 },
+      ];
+      this.start(name); //생성자에서, 즉 객체 만들고 바로 START함수 시작
+    }
+    start(name) {
+      console.log(this);
+      //start에서의 this는 당연히 game객체이다
+      $gameMenu.addEventListener('submit', this.onGameMenuInput);//onGameMenuInput은 아래에 있음,화살표 함수임. 왜일까?
+      //gameMenu.addEventListener 안에서의 this는 form 태그임(gameMenu라는 form이다)!!!!
+
+      //즉 같은 start내에서 this를 쓰지만, 그 범위?종속된 범위 등에 따라 this는 서로 다른 것을 가르킨다.
+      //그리고 ch10에서 적어놨던 것처럼, 화살표 함수에서의 this는 상위의 객체(화살표 함수 바깥부분)를 가리키므로, 
+      //이 경우에서 gameMenu에서 화살표 함수의 this는 game객체를 가르키는 것이다.!!!
+
+      //즉 그냥 일반 function에서의 this는 그 function 자체만의 this를 가지게 되고
+      //화살표 함수에서의 this는 그 함수 바깥에서의 객체를 가리키게 되는 것이다.
+
+      $battleMenu.addEventListener('submit', this.onBattleMenuInput);
+      this.changeScreen('game');
+      this.hero = new Hero(this, name);
+      this.updateHeroStat();
+    }
+
+    changeScreen(screen) {
+      if (screen === 'start') {//시작이면
+        $startScreen.style.display = 'block'; //시작 부분만 보여주고
+        $gameMenu.style.display = 'none'; //나머지들은 가려줌
+        $battleMenu.style.display = 'none';
+      } else if (screen === 'game') {
+        $startScreen.style.display = 'none';
+        $gameMenu.style.display = 'block';
+        $battleMenu.style.display = 'none';
+      } else if (screen === 'battle') {
+        $startScreen.style.display = 'none';
+        $gameMenu.style.display = 'none';
+        $battleMenu.style.display = 'block';
+      }
+    }
+
+
+    //여기서는 클래스 내부에 화살표 함수를 쓴 이유-->클래스 내의 this는 매번 그 의미가 다를 수 있다!(77줄 참조)
+    //즉 start에서의 객체를 그대로 쓸 수 있게 하기 위해서 화살표 함수로 해주었다.
+    //화살표 함수가 아니라 그냥 function이었으면 onGameInput에서의 this는 그냥 form태그임
+    onGameMenuInput = (event) => {
+      event.preventDefault();
+      const input = event.target['menu-input'].value;
+      if (input === '1') { // 모험
+        this.changeScreen('battle');
+        const randomIndex = Math.floor(Math.random() * this.monsterList.length);
+        const randomMonster = this.monsterList[randomIndex];
+        this.monster = new Monster(
+          this,
+          randomMonster.name,
+          randomMonster.hp,
+          randomMonster.att,
+          randomMonster.xp,
+        );
+        this.updateMonsterStat();
+        this.showMessage(`몬스터와 마주쳤다. ${this.monster.name}인 것 같다!`);
+      } else if (input === '2') { // 휴식
+        this.hero.hp = this.hero.maxHp;
+        this.updateHeroStat();
+        this.showMessage('충분한 휴식을 취했다.');
+      } else if (input === '3') { // 종료
+        this.showMessage(' ');
+        this.quit();
+      }
+    }
+    onBattleMenuInput = (event) => {
+      event.preventDefault();
+      const input = event.target['battle-input'].value;
+      if (input === '1') { // 공격
+        const { hero, monster } = this;
+        hero.attack(monster);
+        monster.attack(hero);
+        if (hero.hp <= 0) {
+          this.showMessage(`${hero.lev} 레벨에서 전사. 새 주인공을 생성하세요.`);
+          this.quit();
+        } else if (monster.hp <= 0) {
+          this.showMessage(`몬스터를 잡아 ${monster.xp} 경험치를 얻었다.`);
+          hero.getXp(monster.xp);
+          this.monster = null; //몬스터가 죽었으니까 없애줌
+          this.changeScreen('game');
+        } else { // 전투 진행 중
+          this.showMessage(`${hero.att}의 데미지를 주고, ${monster.att}의 데미지를 받았다.`);
+        }
+        this.updateHeroStat();
+        this.updateMonsterStat();
+      } else if (input === '2') { // 회복
+        const { hero, monster } = this;
+        hero.hp = Math.min(hero.maxHp, hero.hp + 20);
+        monster.attack(hero);
+        this.showMessage('체력을 조금 회복했다!');
+        this.updateHeroStat();
+      } else if (input === '3') { // 도망
+        this.changeScreen('game');
+        this.showMessage('부리나케 도망쳤다!');
+        this.monster = null;
+        this.updateMonsterStat();
+      }
+    }
+
+    updateHeroStat() {
+      const { hero } = this; //화살표 함수가 아니므로 여기에서의 this는 호출됨함수의 객체(game 객체)의 hero 속성
+      //const hero=this.hero; 이거랑 같은 의미임
+
+      if (hero === null) { // 만약 game 객체 중 히어로 속성이 없다면 화면에 변화 없음
+        $heroName.textContent = '';
+        $heroLevel.textContent = '';
+        $heroHp.textContent = '';
+        $heroXp.textContent = '';
+        $heroAtt.textContent = '';
+        return;
+      }//hero 속성이 있다면 화면 바꾸어줌
+      $heroName.textContent = hero.name;
+      $heroLevel.textContent = `${hero.lev}Lev`;
+      $heroHp.textContent = `HP: ${hero.hp}/${hero.maxHp}`;
+      $heroXp.textContent = `XP: ${hero.xp}/${15 * hero.lev}`;
+      $heroAtt.textContent = `ATT: ${hero.att}`;
+    }
+
+    updateMonsterStat() {
+      const { monster } = this;
+      if (monster === null) {
+        $monsterName.textContent = '';
+        $monsterHp.textContent = '';
+        $monsterAtt.textContent = '';
+        return;
+      }
+      $monsterName.textContent = monster.name;
+      $monsterHp.textContent = `HP: ${monster.hp}/${monster.maxHp}`;
+      $monsterAtt.textContent = `ATT: ${monster.att}`;
+    }
+    showMessage(text) {
+      $message.textContent = text;
+    }
+    quit() {
+      this.hero = null;
+      this.monster = null;
+      this.updateHeroStat();
+      this.updateMonsterStat();
+      $gameMenu.removeEventListener('submit', this.onGameMenuInput);
+      $battleMenu.removeEventListener('submit', this.onBattleMenuInput);
+      this.changeScreen('start');
+      game = null;
+    }
+  }
+ 
+  ///////////////////////////////////////////////
+  //클래스의 상속
+  class Unit {//부모클래스(공통된 클래스)
+    constructor(game, name, hp, att, xp) {
+      this.game = game;
+      this.name = name;
+      this.maxHp = hp;
+      this.hp = hp;
+      this.xp = xp;
+      this.att = att;
+    }
+    attack(target) {
+      target.hp -= this.att;
+    }
+  }
+
+  /* 상속에서 super의 두가지 역할
+  1. 자식 클래스 내에서 부모클래스의 생성자 역할
+2. 자식 클래스에서 부모 클래스의 메소드 접근 역할*/
+
+
+  class Hero extends Unit { //부모 클래스를 상속하는 자식 클래스
+    constructor(game, name) {
+      /* 원래는 이 파트가 있었는데 보니까 부모 클래스의 생성자와 겹침. 따라서 super를 통해 부모 클래스의 생성자 가져옴
+      this.game = game;
+      this.name = name;
+      this.maxHp = hp;
+      this.hp = hp;
+      this.xp = xp;
+      this.att = att;
+      */
+      super(game, name, 100, 10, 0); //자식 클래스의 생성자 내에서 부모클래스의 생성자 호출.
+      // 부모 클래스 생성자의 파라미터대로 그대로 넣어주면 됨
+      //자식 클래스의 생성자도 부모와의 증복을 최대한 피하기 위해서. 따라서 위의 저 속성 설정 파트도 자식 클래스에 맞추어 가능해짐
+      //즉 super를 해주면 부모 클래스의 내용대로 구현이 되면서 그 객체는 자식 객체인 것임
+      this.lev = 1;  //근데 이 속성은 중복이 아니므로 자식에서 따로 해줌
+    }
+    attack(target) {
+      super.attack(target); // 부모 클래스의 attack과 중복되므로 이렇게 부모 것을 호출함
+      //화살표 함수가 아닌 function이므로 attack의 this는 자식 객체를 가르키는 것임
+      // 부모 클래스 attack 외의 동작이 있으면 아래에 추가해서 하면 됨
+      console.log("attack함수는 부모 클래스의 상속을 받았음");
+    }
+
+    heal(monster) {
+      this.hp += 20;
+      this.hp -= monster.att;
+    }
+    getXp(xp) {
+      this.xp += xp;
+      if (this.xp >= this.lev * 15) { // 경험치를 다 채우면
+        this.xp -= this.lev * 15; // xp: 5,  lev: 2, maxXp: 15
+        this.lev += 1;
+        this.maxHp += 5;
+        this.att += 5;
+        this.hp = this.maxHp;
+        this.game.showMessage(`레벨업! 레벨 ${this.lev}`);
+      }
+    }
+  }
+
+  class Monster extends Unit {
+    constructor(game, name, hp, att, xp) {
+      super(game, name, hp, att, xp);
+    }
+  }
+
+  let game = null;
+  $startScreen.addEventListener('submit', (event) => {
+    event.preventDefault();
+    const name = event.target['name-input'].value;
+    game = new Game(name);
+  });
+     
+      
+      
+
+
+
+      /* 팩토리 패턴-공장함수
+      2015년 이전에는 클래스가 없어서 객체를 반환하는 함수를 만들어 활용함
+    
+      패턴1.
+      function createMonster(name,hp,att,xp){
+          return {name,hp,att,xp};
+      }
+      const monster1=createMonster('슬라임',25,10,11);
+      
+      패턴2.this와 new의 등장
+      function Monster(name,hp,att,xp){
+          this.name=name;
+          this.hp=hp;
+          this.att=att;
+          this.xp=xp;
+      }
+
+      //이렇게 class 등장 전에는 생성함수와 객체 함수가 따로 존재했다.-prototype 이라는 것을 써서 서로의 관계 표현한 것임
+       Monster.prototype.attack=function(monster) {
+          monster.hp -= this.att;
+          this.hp -= monster.att;
+        }
+
+      -->원래 이런 식으로 (ch10 설명 참조) 기본 function(화살표가 아닌 함수)에 this를 쓰면 윈도우를 가르킴 근데
+      +)생성자 함수는 웬만하면 대문자로 시작하자
+
+      const monster2=new Monster('슬라임',26,10,10); -->  이렇게 new 를 써주면 this가 걍 내가 아는 대로 자기 객체 그 자체를 가르킴
+      즉, 생성자 함수인데 new를 빼먹으면 윈도우의 속성을 바꾸게 되는 거임! 반드시 주의
+      
+
+      3. 클래스의 등장
+      class Monster{
+          constructor(name,hp,att,xp){ //필수. 말 그대로 생성자. 걍 패턴2의 생성함수가 생성자로 이름만 바뀐 것
+          this.name=name;
+          this.hp=hp;
+          this.att=att;
+          this.xp=xp;
+        }
+      }
+
+      const monster3=new Monster('슬라임',25,10,11) //이러면 new를 빼먹으면 에러가 나기 때문에 패턴2에 비해서 실수 발견하기 좋음
+      
+      class Monster= {
+        constructor(name,hp,att,xp){ //필수. 말 그대로 생성자. 걍 패턴2의 생성함수가 생성자로 이름만 바뀐 것
+          this.name=name;
+          this.hp=hp;
+          this.att=att;
+          this.xp=xp;
+        }
+        //객체 함수
+        attack(monster) {
+          monster.hp -= this.att;
+          this.hp -= monster.att;
+        }
+        heal(monster) {
+          this.hp += 20;
+          this.hp -= monster.att;
+        }
+      };
+
+      단!!! 클래스에서도 객체 리터럴처럼 this를 쓸 때 화살표 함수를 가르키면 안 됨!(ch10 참조)
+
+      */
+
+</script>
+</body>
+</html>
