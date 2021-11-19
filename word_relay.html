@@ -7,7 +7,8 @@
 </head>
 <body>
     <div><span id="order">1</span>번째 참가자</div>
-    <!--현재 div의 자손이 span인 거임. docment.querySelector('div span') 이렇게 띄어쓰기로 자손!(꼭 자식관계가 아니어도 됨) 관계를 나타낼 수 있음
+    <!--현재 div의 자손이 span인 거임. 
+    //docment.querySelector('div span') 이렇게 띄어쓰기로 자손!(꼭 자식관계가 아니어도 됨) 관계를 나타낼 수 있음
     자식 관계는 >로 표현 ex. document.querySelector('div>span')-->
     <div>제시어: <span id="word"></span></div> <!--span은 인라인 컨테이너를 나타냄 -->
     <input type="text"> <!-- 입력창-->
@@ -24,9 +25,9 @@
         //사용자로부터 예/아니오를 입력받음,boolean임
         const yesorno= confirm("맞나여?");
 
-        const $button=document.querySelector('button');
+        const $button=document.querySelector('button'); //태그 명 선택
         const $input=document.querySelector('input');
-        const $word=document.querySelector('#word');
+        const $word=document.querySelector('#word'); //id 선택할 거면 #을 붙임
         const $order=document.querySelector("#order")
         let word; //제시어
         let newWord; //입력어
@@ -101,10 +102,16 @@
         //이벤트 종류는 반드시 문자열
         //addEventListener() 메소드는 거의 모든 브라우저에서 지원하는 이벤트 리스너 등록을 위한 메소드입니다
         //여기서의 익명함수는 콜백함수임.(리스너 함수)
-        //콜백함수: 어떤 동작 후에 "연이어서" 바로 실행되는 함수
+        //콜백함수: (비동기로 실행된 함수의 구현내용에 따라 함수를 실행하고 그 값을 받아옴)
 
-        //이벤트가 발생하면, 익명 함수 부분이 실행되는 거임
-        //()=>{} 부분을 function(){} 이렇게 해줘도 상관없는 거임
+//******************************************************************************************************************
+        //비동기 함수를 호출할 때는 결과값을 리턴 받으려고 하지말고,
+        // 결과값을 통해 처리할 로직을 콜백 함수로 넘기는 스타일로 코딩을 해줘야 예상된 결과르 얻을 수 있습니다.
+        //즉! 비동기 함수에는 반드시 콜백함수로 실행 내용을 구현해야 비동기가 아닌 내가 예상한 결과(동기)로 작동할 수 있는 거임
+//******************************************************************************************************************
+
+        //이벤트가 발생하면, 익명! 함수 부분이 실행되는 거임
+        //()=>{} 부분을 function(){} 이렇게 해줘도 상관없는 거임(파라미터가 없는 익명함수니까)
         /* 1번
         document.querySelector('input').addEventListener('input',()=>{
             console.log("글자입력");
@@ -132,7 +139,8 @@
             console.log("버튼 클릭함수")
         }
         const $button=document.querySelector('button');
-        $button.addEventListener('click',onClickButton); //단 ! 이때 반드시 함수 이름만 써줘야 함. onClick()이렇게 괄호?까지 해버리면 안 됨
+        $button.addEventListener('click',onClickButton); 
+        //단 ! 이때 반드시 함수 이름만 써줘야 함. onClick()이렇게 괄호?까지 해버리면 안 됨
         //괄호까지 해버리면 return 값을 받아온다는 건데
         //왜냐면 retuurn 값이 없으면 undefined로 되어버리므로  에러가 남. 그냥 이름으로만 써야함
         //말 그대로 어떤 '값'이 오는 자리가 아니라! "함수"의 자리이므로 그냥 함수의 이름만 써줌
@@ -142,7 +150,7 @@
 </html>
 
 <!--//html "태그" 선택하기
-//document: 브라우저 자체에서 제공하는 객체
+//document: 브라우저 "자체에서" 제공하는 객체
 //해당되는 게 여러개이면 그 중 첫 번째 것만 가져온다.
 document.querySelector('선택자');
 
@@ -155,7 +163,7 @@ const $$buttons=document.querySelectorAll('button');//버튼 여러개
 
 //id 선택하기- id는 고유한 값
 // #사용
-document.querySelector('#order'); //태그의 id가 order인 것 가져오기
+document.querySelector('#order'); //태그의 "id"가 order인 것 가져오기
 
 //class 선택하기
 //. 사용
