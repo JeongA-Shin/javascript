@@ -59,10 +59,11 @@
     //form 안의 버튼을 누르면 submit이 호출됨
     //버튼을 클릭하면 버튼에는 click이라는 이벤트가, form에는 submit이라는 이벤트가 발생함
     //그런데 form의 기본 동작(submit)은 새로고침임. 이렇게 되버리면 지금까지의 데이터등이 날아갈 위험이 있으므로 기본 동작을 막아야함
-    $form.addEventListener('submit',(event)=>{ //event는 이벤트가 발생할 때마다 브라우저 자체에서 생성하는 객체임. 그냥 따로 선언같은 거 필요없이
-      //바로 event 이렇게 해줘도 되는 거임
+    $form.addEventListener('submit',(event)=>{ //event는 이벤트가 발생할 때마다 브라우저 자체에서 생성하는 객체임. 
+    //그냥 따로 선언같은 거 필요없이 바로 event 이렇게 해줘도 되는 거임
       event.preventDefault();  //기본 동작 막기
-      const value=$input.value; // input 관련 태그들은 textContent가 아니라 그냥 value임. 혹은 아래의 주석 내용 참고 해서 event.target[0].value 이렇게 해도 됨
+      const value=$input.value; 
+      // input 관련 태그들은 textContent가 아니라 그냥 value임. 혹은 아래의 주석 내용 참고 해서 event.target[0].value 이렇게 해도 됨
       $input.value=''; // 글자 칸 다시 비워줌
       const valid=checkInput(value); //코드 길어질 거같으면 따로 함수로 빼놓음
       //문제 없음
@@ -100,7 +101,8 @@
       
       */ 
       //어차피 input은 문자열로 입력을 받음
-      if(answer.join('')===value){ //join:배열을 문자열로 바꾸는 함수. ex{3,1,4,6}=>3,1,4,6 그런데 join('') 이렇게 해줬음로 3146이 된다.(,없이 붙게됨)
+      if(answer.join('')===value){ 
+        //join:배열을 문자열로 바꾸는 함수. ex{3,1,4,6}=>3,1,4,6 그런데 join('') 이렇게 해줬음로 3146이 된다.(,없이 붙게됨)
         $logs.textContent='홈런!';
         return;
       }
